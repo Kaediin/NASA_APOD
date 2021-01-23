@@ -1,4 +1,4 @@
-import tkinter, requests, os, datetime
+import tkinter, requests, os, datetime, subprocess
 import urllib.request as req
 from PIL import Image, ImageTk
 
@@ -6,6 +6,15 @@ lastImageRequestTime = ''
 root = tkinter.Tk()
 api_key = 'qQSijXTvN8qN3i8tiYhIqi4BjZMeYbYiP7ZuZ9hZ'
 api_url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}'
+
+def git_add(file_path):
+    return subprocess.check_output(['git', 'add', file_path])
+
+def git_commit(message):
+    return subprocess.check_output(['git', 'commit',  '-m', message])
+
+def git_push():
+    return subprocess.check_output(['git', 'push', 'origin', 'master'])
 
 
 def refresh_data():
@@ -29,6 +38,16 @@ def refresh_data():
             print(f'{today}: Image does not exist. Downloading from URL now')
             req.urlretrieve(hdurl, f"images/{date}.jpg")
             pilImage = Image.open(f'images/{date}.jpg')
+
+            try:
+                print(f'{today}: Adding new file to git')
+                git_add('images')
+                print(f'{today}: Committing new file to git')
+                git_commit(f'{today}: adding new file')
+                print(f'{today}: Pushing new file to git')
+                git_push()
+            except subprocess.CalledProcessError as e:
+                print(f'{today}: ', e.output)
 
         print(f'{today}: Creating New Root')
         root = tkinter.Tk()
