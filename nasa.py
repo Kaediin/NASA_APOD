@@ -1,5 +1,4 @@
-import tkinter
-import requests
+import tkinter, requests, os, datetime
 import urllib.request as req
 from PIL import Image, ImageTk
 
@@ -14,21 +13,27 @@ def refresh_data():
     response = requests.request('GET', api_url).json()
     hdurl = response['hdurl']
     date = response['date']
+    today = datetime.datetime.now()
 
     if date != lastImageRequestTime:
         lastImageRequestTime = date
 
-        print('Destroying Root')
+        print(f'{today}: Destroying Root')
         root.destroy()
 
-        print('Downloading URL')
-        req.urlretrieve(hdurl, f"images/{date}.jpg")
-        pilImage = Image.open(f'images/{date}.jpg')
+        print(f'{today}: Checking if image already exists')
+        if os.path.isfile(f'images/{date}.jpg'):
+            print(f'{today}: Image exists. Not downloading again')
+            pilImage = Image.open(f'images/{date}.jpg')
+        else:
+            print(f'{today}: Image does not exist. Downloading from URL now')
+            req.urlretrieve(hdurl, f"images/{date}.jpg")
+            pilImage = Image.open(f'images/{date}.jpg')
 
-        print('Creating New Root')
+        print(f'{today}: Creating New Root')
         root = tkinter.Tk()
 
-        print('Creating TKinter Window')
+        print(f'{today}: Creating TKinter Window')
         w, h = root.winfo_screenwidth(), root.winfo_screenheight()
         root.overrideredirect(1)
         root.geometry("%dx%d+0+0" % (w, h))
@@ -46,13 +51,13 @@ def refresh_data():
         image = ImageTk.PhotoImage(pilImage)
         imagesprite = canvas.create_image(w / 2, h / 2, image=image)
 
-        print('Calling root after in 2 hours')
-        root.after((1000 * 60) * 120, refresh_data) #3600000 milliseconds in an hour
-        print('Running Mainloop')
+        print(f'{today}: Calling root after in 4 hours')
+        root.after((1000 * 60) * 240, refresh_data) #3600000 milliseconds in an hour
+        print(f'{today}: Running Mainloop')
         root.mainloop()
     else:
-        print('No API update. Refreshing later in 2 hours')
-        root.after((1000 * 60) * 120, refresh_data) #3600000 milliseconds in an hour
+        print(f'{today}: No API update. Refreshing later in 4 hours')
+        root.after((1000 * 60) * 240, refresh_data) #3600000 milliseconds in an hour
 
 
 refresh_data()
