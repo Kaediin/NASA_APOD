@@ -22,6 +22,9 @@ def refresh_data():
     response = requests.request('GET', api_url).json()
     hdurl = response['hdurl']
     date = response['date']
+    title = response['title']
+    # explanation =  "This shadowy landscape of majestic mountains and icy plains stretches toward the horizon on a small, distant world. It was captured from a range of about 18,000 kilometers when New Horizons looked back toward Pluto, 15 minutes after the spacecraft's closest approach on July 14, 2015. The dramatic, low-angle, near-twilight scene follows rugged mountains formally known as Norgay Montes from foreground left, and Hillary Montes along the horizon, giving way to smooth Sputnik Planum at right. Layers of Pluto's tenuous atmosphere are also revealed in the backlit view. With a strangely familiar appearance, the frigid terrain likely includes ices of nitrogen and carbon monoxide with water-ice mountains rising up to 3,500 meters (11,000 feet). That's comparable in height to the majestic mountains of planet Earth. The Plutonian landscape is 380 kilometers (230 miles) across."
+    explanation = response['explanation']
     today = datetime.datetime.now()
 
     if date != lastImageRequestTime:
@@ -69,6 +72,10 @@ def refresh_data():
             pilImage = pilImage.resize((imgWidth, imgHeight), Image.ANTIALIAS)
         image = ImageTk.PhotoImage(pilImage)
         imagesprite = canvas.create_image(w / 2, h / 2, image=image)
+        canvas.create_text(w/2, 40, fill='white', font="Roboto 20 normal bold", text=title)
+        canvas.create_text(0, 0, anchor='nw', justify='left', fill='white', font="Roboto 11 normal bold", width=w/8, text=explanation)
+        canvas.create_text(w, h, anchor='se', fill='white', font="Roboto 11 normal bold", text=date)
+        canvas.configure(highlightthickness=0, borderwidth=0)
 
         print(f'{today}: Calling root after in 4 hours')
         root.after((1000 * 60) * 240, refresh_data) #3600000 milliseconds in an hour
