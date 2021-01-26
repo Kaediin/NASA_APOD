@@ -102,4 +102,5 @@ def refresh_data():
 
 
 # TODO: Add touch controls
+# TODO: Move title to right of screen
 refresh_data()
