@@ -4,6 +4,9 @@ from PIL import Image, ImageTk
 
 lastImageRequestTime = ''
 root = tkinter.Tk()
+canvas = None
+explanation_hidden = False
+explanation_widget = None
 api_key = 'qQSijXTvN8qN3i8tiYhIqi4BjZMeYbYiP7ZuZ9hZ'
 api_url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}'
 
@@ -16,9 +19,18 @@ def git_commit(message):
 def git_push():
     return subprocess.check_output(['git', 'push', 'origin', 'master'])
 
+def button_1(event):
+    global explanation_hidden
+    if not explanation_hidden:
+        canvas.itemconfigure(explanation_widget, state='hidden')
+    else:
+        canvas.itemconfigure(explanation_widget, state='normal')
+    explanation_hidden = not explanation_hidden
+
 
 def refresh_data():
-    global root, lastImageRequestTime
+    global root, lastImageRequestTime, canvas, explanation_widget
+
     today = datetime.datetime.now()
     hasImage = False
     try:
@@ -65,6 +77,7 @@ def refresh_data():
             root.focus_set()
             root.bind("<Escape>", lambda e: (e.widget.withdraw(), e.widget.quit()))
             canvas = tkinter.Canvas(root, width=w, height=h)
+            canvas.bind("<Button-1>", button_1)
             canvas.pack()
             canvas.configure(background='black')
             imgWidth, imgHeight = pilImage.size
@@ -75,8 +88,8 @@ def refresh_data():
                 pilImage = pilImage.resize((imgWidth, imgHeight), Image.ANTIALIAS)
             image = ImageTk.PhotoImage(pilImage)
             imagesprite = canvas.create_image(w / 2, h / 2, image=image)
-            canvas.create_text(w / 2, 40, fill='white', font="Roboto 20 normal bold", text=title)
-            canvas.create_text(0, 0, anchor='nw', justify='left', fill='white', font="Roboto 11 normal bold",
+            canvas.create_text(w, 0, anchor='ne', fill='white', font="Roboto 16 normal bold", text=title)
+            explanation_widget = canvas.create_text(0, 0, anchor='nw', justify='left', fill='white', font="Roboto 11 normal bold",
                                width=w / 8, text=explanation)
             canvas.create_text(w, h, anchor='se', fill='white', font="Roboto 11 normal bold", text=date)
             canvas.configure(highlightthickness=0, borderwidth=0)
@@ -99,8 +112,4 @@ def refresh_data():
         # Retrying in 30mins
         root.after((1000 * 60) * 30, refresh_data)
 
-
-
-# TODO: Add touch controls
-# TODO: Move title to right of screen
 refresh_data()
