@@ -43,19 +43,20 @@ def refresh_data():
 
         if date != lastImageRequestTime:
             lastImageRequestTime = date
+            img_path = os.path.join(f'images/{date}.jpg')
 
             print(f'{today}: Destroying Root')
             root.destroy()
 
             print(f'{today}: Checking if image already exists')
-            if os.path.isfile(f'images/{date}.jpg'):
+            if os.path.isfile(img_path):
                 print(f'{today}: Image exists. Not downloading again')
-                pilImage = Image.open(f'images/{date}.jpg')
+                pilImage = Image.open(img_path)
                 hasImage = True
             else:
                 print(f'{today}: Image does not exist. Downloading from URL now')
-                req.urlretrieve(hdurl, f"images/{date}.jpg")
-                pilImage = Image.open(f'images/{date}.jpg')
+                req.urlretrieve(hdurl, img_path)
+                pilImage = Image.open(img_path)
 
                 try:
                     print(f'{today}: Adding new file to git')
