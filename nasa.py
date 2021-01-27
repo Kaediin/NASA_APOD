@@ -1,6 +1,8 @@
-import tkinter, requests, os, datetime, subprocess
+import tkinter, requests, os, datetime, subprocess, time
 import urllib.request as req
 from PIL import Image, ImageTk
+
+time.sleep(60)
 
 lastImageRequestTime = ''
 root = tkinter.Tk()
