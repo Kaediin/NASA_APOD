@@ -43,7 +43,7 @@ def refresh_data():
 
         if date != lastImageRequestTime:
             lastImageRequestTime = date
-            img_path = os.path.join(f'images/{date}.jpg')
+            img_path = f'Desktop/NASA_APOD/images/{date}.jpg'
             print(f'Image path: {img_path}')
 
             print(f'{today}: Destroying Root')
