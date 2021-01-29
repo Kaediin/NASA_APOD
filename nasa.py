@@ -2,7 +2,7 @@ import tkinter, requests, os, datetime, subprocess, time, pathlib
 import urllib.request as req
 from PIL import Image, ImageTk
 
-file = open(f'{pathlib.Path(__file__).parent.absolute()}/log.txt', 'a+')
+file = open(f'{pathlib.Path(__file__).parent.absolute()}/log.txt', 'a')
 
 print(file, 'Sleeping 15 seconds')
 time.sleep(15)
