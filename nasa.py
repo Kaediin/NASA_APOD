@@ -54,7 +54,7 @@ def refresh_data():
             lastImageRequestTime = date
             img_path = f'{pathlib.Path(__file__).parent.absolute()}/images/{date}.jpg'
 
-            append_log(f'{today}: Image path: {img_path}')
+            append_log(f'\n\n{today}: Image path: {img_path}')
 
             append_log(f'{today}: Destroying Root')
             root.destroy()
