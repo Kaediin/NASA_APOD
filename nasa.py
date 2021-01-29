@@ -1,8 +1,15 @@
-import tkinter, requests, os, datetime, subprocess, time
+import tkinter, requests, os, datetime, subprocess, time, pathlib
 import urllib.request as req
 from PIL import Image, ImageTk
 
-time.sleep(60)
+file = open(f'{pathlib.Path(__file__).parent.absolute()}/log.txt', 'a+')
+
+print(file, 'Sleeping 15 seconds')
+time.sleep(15)
+
+if os.environ.get('DISPLAY','') == '':
+    print(file, 'No display found. Using :0.0')
+    os.environ.__setitem__('DISPLAY', ':0.0')
 
 lastImageRequestTime = ''
 root = tkinter.Tk()
@@ -11,6 +18,7 @@ explanation_hidden = False
 explanation_widget = None
 api_key = 'qQSijXTvN8qN3i8tiYhIqi4BjZMeYbYiP7ZuZ9hZ'
 api_url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}'
+
 
 def git_add(file_path):
     return subprocess.check_output(['git', 'add', file_path])
@@ -45,36 +53,39 @@ def refresh_data():
 
         if date != lastImageRequestTime:
             lastImageRequestTime = date
-            img_path = f'home/pi/Desktop/NASA_APOD/images/{date}.jpg'
-            print(f'Image path: {img_path}')
+            img_path = f'{pathlib.Path(__file__).parent.absolute()}/images/{date}.jpg'
 
-            print(f'{today}: Destroying Root')
+            append_log(file, f'{today}: Image path: {img_path}')
+
+            append_log(file, f'{today}: Destroying Root')
             root.destroy()
 
-            print(f'{today}: Checking if image already exists')
+            append_log(file, f'{today}: Checking if image already exists')
             if os.path.isfile(img_path):
-                print(f'{today}: Image exists. Not downloading again')
+                append_log(file, f'{today}: Image exists. Not downloading again')
                 pilImage = Image.open(img_path)
                 hasImage = True
             else:
-                print(f'{today}: Image does not exist. Downloading from URL now')
-                req.urlretrieve(hdurl, img_path)
+                append_log(file, f'{today}: Image does not exist. Downloading from URL now')
+                append_log(file, f'{today}: Retrieving img from URL')
+                req.urlretrieve(hdurl, f'images/{date}.jpg')
+                append_log(file, f'{today}: Creating Pillow image')
                 pilImage = Image.open(img_path)
 
                 try:
-                    print(f'{today}: Adding new file to git')
+                    append_log(file, f'{today}: Adding new file to git')
                     git_add('images')
-                    print(f'{today}: Committing new file to git')
+                    append_log(file, f'{today}: Committing new file to git')
                     git_commit(f'{today}: adding new file')
-                    print(f'{today}: Pushing new file to git')
+                    append_log(file, f'{today}: Pushing new file to git')
                     git_push()
                 except subprocess.CalledProcessError as e:
-                    print(f'{today}: ', e.output)
+                    append_log(file, f'{today}: {e.output}')
 
-            print(f'{today}: Creating New Root')
+            append_log(file, f'{today}: Creating New Root')
             root = tkinter.Tk()
 
-            print(f'{today}: Creating TKinter Window')
+            append_log(file, f'{today}: Creating TKinter Window')
             w, h = root.winfo_screenwidth(), root.winfo_screenheight()
             root.overrideredirect(1)
             root.geometry("%dx%d+0+0" % (w, h))
@@ -99,21 +110,25 @@ def refresh_data():
             canvas.configure(highlightthickness=0, borderwidth=0)
 
             if not hasImage:
-                print(f'{today}: Calling root after in 24 hours')
+                append_log(file, f'{today}: Calling root after in 24 hours')
                 root.after((1000 * 60) * 1440, refresh_data)  # 3600000 milliseconds in an hour
             else:
-                print(f'{today}: No API update. Refreshing later in 1 hour')
+                append_log(file, f'{today}: No API update. Refreshing later in 1 hour')
                 root.after((1000 * 60) * 60, refresh_data)  # 3600000 milliseconds in an hour
-            print(f'{today}: Running Mainloop')
+            append_log(file, f'{today}: Running Mainloop')
             root.mainloop()
         else:
-            print(f'{today}: No API update. Refreshing later in 1 hour')
+            append_log(file, f'{today}: No API update. Refreshing later in 1 hour')
             root.after((1000 * 60) * 60, refresh_data)  # 3600000 milliseconds in an hour
 
     except Exception as e:
-        print(f'Error: {e}')
+        append_log(file, f'Error: {e}')
 
         # Retrying in 30mins
         root.after((1000 * 60) * 30, refresh_data)
+
+def append_log(f, msg):
+    print(msg)
+    f.write(f'{msg}\n')
 
 refresh_data()
