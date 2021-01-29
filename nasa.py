@@ -67,7 +67,7 @@ def refresh_data():
             else:
                 append_log(f'{today}: Image does not exist. Downloading from URL now')
                 append_log(f'{today}: Retrieving img from URL')
-                req.urlretrieve(hdurl, f'images/{date}.jpg')
+                req.urlretrieve(hdurl, img_path)
                 append_log(f'{today}: Creating Pillow image')
                 pilImage = Image.open(img_path)
 
