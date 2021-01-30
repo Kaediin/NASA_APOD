@@ -79,7 +79,7 @@ def refresh_data():
                     append_log(f'{today}: Pushing new file to git')
                     git_push()
                 except subprocess.CalledProcessError as e:
-                    append_log(f'{today}, ERROR: {e.output}')
+                    append_log(f'{today}, ERROR: {e}')
 
             append_log(f'{today}: Creating New Root')
             root = tkinter.Tk()
