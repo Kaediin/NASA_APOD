@@ -1,4 +1,4 @@
-import tkinter, requests, os, datetime, subprocess, time, pathlib
+import tkinter, requests, os, datetime, subprocess, time, pathlib, glob, os
 import urllib.request as req
 from PIL import Image, ImageTk
 
@@ -16,17 +16,8 @@ canvas = None
 explanation_hidden = False
 explanation_widget = None
 api_key = 'qQSijXTvN8qN3i8tiYhIqi4BjZMeYbYiP7ZuZ9hZ'
+# api_url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}&date=2021-02-16'
 api_url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}'
-
-
-def git_add(file_path):
-    return subprocess.check_output(['git', 'add', file_path])
-
-def git_commit(message):
-    return subprocess.check_output(['git', 'commit',  '-m', message])
-
-def git_push():
-    return subprocess.check_output(['git', 'push', 'origin', 'master'])
 
 def button_1(event):
     global explanation_hidden
@@ -44,7 +35,14 @@ def refresh_data():
     hasImage = False
     try:
         response = requests.request('GET', api_url).json()
-        hdurl = response['hdurl']
+        try:
+            hdurl = response['hdurl']
+        except:
+            if hasImage:
+                append_log(f'{today}: Image already being displayed. No image found for next day. Continuing with previous image')
+                raise Exception
+            append_log(f'{today}: No image being displayed. No image for next day. Getting last image from folder')
+            hdurl = None
         date = response['date']
         title = response['title']
         # explanation =  "This shadowy landscape of majestic mountains and icy plains stretches toward the horizon on a small, distant world. It was captured from a range of about 18,000 kilometers when New Horizons looked back toward Pluto, 15 minutes after the spacecraft's closest approach on July 14, 2015. The dramatic, low-angle, near-twilight scene follows rugged mountains formally known as Norgay Montes from foreground left, and Hillary Montes along the horizon, giving way to smooth Sputnik Planum at right. Layers of Pluto's tenuous atmosphere are also revealed in the backlit view. With a strangely familiar appearance, the frigid terrain likely includes ices of nitrogen and carbon monoxide with water-ice mountains rising up to 3,500 meters (11,000 feet). That's comparable in height to the majestic mountains of planet Earth. The Plutonian landscape is 380 kilometers (230 miles) across."
@@ -67,19 +65,16 @@ def refresh_data():
             else:
                 append_log(f'{today}: Image does not exist. Downloading from URL now')
                 append_log(f'{today}: Retrieving img from URL')
-                req.urlretrieve(hdurl, img_path)
+                if hdurl is not None:
+                    req.urlretrieve(hdurl, img_path)
+                else:
+                    append_log(f'{today}: Error loading next image. Loading previous one')
+                    img_path = max(glob.glob(f'{pathlib.Path(__file__).parent.absolute()}/images/*'), key=os.path.getctime)
+                    title = ''
+                    explanation = f'No image found for {today.date()} :('
+
                 append_log(f'{today}: Creating Pillow image')
                 pilImage = Image.open(img_path)
-
-                try:
-                    append_log(f'{today}: Adding new file to git')
-                    git_add('images')
-                    append_log(f'{today}: Committing new file to git')
-                    git_commit(f'{today}: adding new file')
-                    append_log(f'{today}: Pushing new file to git')
-                    git_push()
-                except subprocess.CalledProcessError as e:
-                    append_log(f'{today}, ERROR: {e.output}')
 
             append_log(f'{today}: Creating New Root')
             root = tkinter.Tk()
