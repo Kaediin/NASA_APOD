@@ -27,7 +27,6 @@ def button_1(event):
         canvas.itemconfigure(explanation_widget, state='normal')
     explanation_hidden = not explanation_hidden
 
-
 def refresh_data():
     global root, lastImageRequestTime, canvas, explanation_widget
 
